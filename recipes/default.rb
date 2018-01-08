@@ -19,6 +19,8 @@
 
 include_recipe 'chef-sugar::default'
 
+include_recipe 'chef-vault' if node['ceph']['databag_type'].eql?('vault')
+
 include_recipe 'ceph-chef::repo' if node['ceph']['install_repo']
 include_recipe 'ceph-chef::conf'
 

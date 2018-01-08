@@ -108,7 +108,42 @@ default['ceph']['search_by_environment'] = false
 default['ceph']['system']['sysctls'] = ['kernel.pid_max=4194303', 'fs.file-max=26234859']
 
 default['ceph']['install_debug'] = false
-default['ceph']['encrypted_data_bags'] = false
+
+# Set databag type
+# acceptable values 'none', 'encrypted', 'vault'
+# set it to 'none' to manage the secrets completely via attributes
+# set it to 'encrypted' to load the secret from an encrypted data bag
+# set it to 'vault' to load the secret from a vault data bag
+default['ceph']['databag_type'] = 'none'
+
+case node['ceph']['databag_type']
+when 'encrypted'
+  default['ceph']['encrypted_data_bags'] = true
+else
+  default['ceph']['encrypted_data_bags'] = false
+end
+
+default['ceph']['vault']['default_data_bag'] = 'vault_secrets'
+default['ceph']['vault']['ceph-admin-secret'] = {
+  'data_bag' => node['ceph']['vault']['default_data_bag'],
+  'item' => 'ceph-admin-secret',
+  'secret' => 'ceph-admin-secret'
+}
+default['ceph']['vault']['ceph-mon-secret'] = {
+  'data_bag' => node['ceph']['vault']['default_data_bag'],
+  'item' => 'ceph-mon-secret',
+  'secret' => 'ceph-mon-secret'
+}
+default['ceph']['vault']['ceph-osd-bootstrap-secret'] = {
+  'data_bag' => node['ceph']['vault']['default_data_bag'],
+  'item' => 'ceph-osd-bootstrap-secret',
+  'secret' => 'ceph-osd-bootstrap-secret'
+}
+default['ceph']['vault']['ceph-radosgw-secret'] = {
+  'data_bag' => node['ceph']['vault']['default_data_bag'],
+  'item' => 'ceph-radosgw-secret',
+  'secret' => 'ceph-radosgw-secret'
+}
 
 default['ceph']['install_repo'] = true
 default['ceph']['btrfs'] = false

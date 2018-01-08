@@ -356,16 +356,26 @@ def ceph_chef_save_fsid_secret(secret)
 end
 
 def ceph_chef_mon_secret
-  if node['ceph']['encrypted_data_bags']
+  case node['ceph']['databag_type']
+  when 'encrypted'
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['mon']['secret_file'])
     Chef::EncryptedDataBagItem.load('ceph', 'mon', secret)['secret']
-  elsif !ceph_chef_mon_nodes.empty?
-    ceph_chef_save_mon_secret(ceph_chef_mon_nodes[0]['ceph']['monitor-secret'])
-    ceph_chef_mon_nodes[0]['ceph']['monitor-secret']
-  elsif node['ceph']['monitor-secret']
-    node['ceph']['monitor-secret']
+  when 'vault'
+    id = node['ceph']['vault']['ceph-mon-secret']
+    secret = ChefVault::Item.load(id['data_bag'], id['item'])
+    secret[id['secret']].delete!("\n")
+  when 'none'
+    if !ceph_chef_mon_nodes.empty?
+      ceph_chef_save_mon_secret(ceph_chef_mon_nodes[0]['ceph']['monitor-secret'])
+      ceph_chef_mon_nodes[0]['ceph']['monitor-secret']
+    elsif node['ceph']['monitor-secret']
+      node['ceph']['monitor-secret']
+    else
+      Chef::Log.info('No monitor secret found')
+      nil
+    end
   else
-    Chef::Log.info('No monitor secret found')
+    Chef::Log.info("Data Bag Type #{node['ceph']['databag_type']} not supported.")
     nil
   end
 end
@@ -399,16 +409,26 @@ end
 # nodes die. If a new secret for anything is re-generated then Ceph will not work correctly.
 # You can also get the secret value and store it in a data bag of the chef-repo wrapper that uses this cookbook.
 def ceph_chef_bootstrap_osd_secret
-  if node['ceph']['encrypted_data_bags']
+  case node['ceph']['databag_type']
+  when 'encrypted'
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['bootstrap-osd']['secret_file'])
     Chef::EncryptedDataBagItem.load('ceph', 'bootstrap-osd', secret)['secret']
-  elsif !ceph_chef_mon_nodes.empty?
-    ceph_chef_save_bootstrap_osd_secret(ceph_chef_mon_nodes[0]['ceph']['bootstrap-osd'])
-    ceph_chef_mon_nodes[0]['ceph']['bootstrap-osd']
-  elsif node['ceph']['bootstrap-osd']
-    node['ceph']['bootstrap-osd']
+  when 'vault'
+    id = node['ceph']['vault']['ceph-osd-bootstrap-secret']
+    secret = ChefVault::Item.load(id['data_bag'], id['item'])
+    secret[id['secret']].delete!("\n")
+  when 'none'
+    if !ceph_chef_mon_nodes.empty?
+      ceph_chef_save_bootstrap_osd_secret(ceph_chef_mon_nodes[0]['ceph']['bootstrap-osd'])
+      ceph_chef_mon_nodes[0]['ceph']['bootstrap-osd']
+    elsif node['ceph']['bootstrap-osd']
+      node['ceph']['bootstrap-osd']
+    else
+      Chef::Log.info('No bootstrap-osd secret found')
+      nil
+    end
   else
-    Chef::Log.info('No bootstrap-osd secret found')
+    Chef::Log.info("Data Bag Type #{node['ceph']['databag_type']} not supported.")
     nil
   end
 end
@@ -467,16 +487,26 @@ def ceph_chef_save_bootstrap_mds_secret(secret)
 end
 
 def ceph_chef_admin_secret
-  if node['ceph']['encrypted_data_bags']
+  case node['ceph']['databag_type']
+  when 'encrypted'
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['admin']['secret_file'])
     Chef::EncryptedDataBagItem.load('ceph', 'admin', secret)['secret']
-  elsif !ceph_chef_admin_nodes.empty?
-    ceph_chef_save_admin_secret(ceph_chef_admin_nodes[0]['ceph']['admin-secret'])
-    ceph_chef_admin_nodes[0]['ceph']['admin-secret']
-  elsif node['ceph']['admin-secret']
-    node['ceph']['admin-secret']
+  when 'vault'
+    id = node['ceph']['vault']['ceph-admin-secret']
+    secret = ChefVault::Item.load(id['data_bag'], id['item'])
+    secret[id['secret']].delete!("\n")
+  when 'none'
+    if !ceph_chef_admin_nodes.empty?
+      ceph_chef_save_admin_secret(ceph_chef_admin_nodes[0]['ceph']['admin-secret'])
+      ceph_chef_admin_nodes[0]['ceph']['admin-secret']
+    elsif node['ceph']['admin-secret']
+      node['ceph']['admin-secret']
+    else
+      Chef::Log.info('No admin secret found')
+      nil
+    end
   else
-    Chef::Log.info('No admin secret found')
+    Chef::Log.info("Data Bag Type #{node['ceph']['databag_type']} not supported.")
     nil
   end
 end
@@ -489,20 +519,30 @@ end
 def ceph_chef_radosgw_secret
   # Return node value if it exist
   return node['ceph']['radosgw-secret'] if node['ceph']['radosgw-secret']
-  if node['ceph']['encrypted_data_bags']
+  case node['ceph']['databag_type']
+  when 'encrypted'
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['radosgw']['secret_file'])
-    Chef::EncryptedDataBagItem.load('ceph', 'radosgw', secret)['secret']
-  elsif !ceph_chef_radosgw_nodes.empty?
-    rgw_inst = ceph_chef_radosgw_nodes[0]
-    if rgw_inst['ceph']['radosgw-secret']
-      return ceph_chef_save_radosgw_secret(rgw_inst['ceph']['radosgw-secret'])
+    Chef::EncryptedDataBagItem.load('ceph', 'radoswgw', secret)['secret']
+  when 'vault'
+    id = node['ceph']['vault']['ceph-radosgw-secret']
+    secret = ChefVault::Item.load(id['data_bag'], id['item'])
+    secret[id['secret']].delete!("\n")
+  when 'none'
+    if !ceph_chef_radosgw_nodes.empty?
+      rgw_inst = ceph_chef_radosgw_nodes[0]
+      if rgw_inst['ceph']['radosgw-secret']
+        return ceph_chef_save_radosgw_secret(rgw_inst['ceph']['radosgw-secret'])
+      else
+        return nil
+      end
+    elsif node['ceph']['radosgw-secret']
+      node['ceph']['radosgw-secret']
     else
-      return nil
+      Chef::Log.info('No radosgw secret found')
+      nil
     end
-  elsif node['ceph']['radosgw-secret']
-    node['ceph']['radosgw-secret']
   else
-    Chef::Log.info('No radosgw secret found')
+    Chef::Log.info("Data Bag Type #{node['ceph']['databag_type']} not supported.")
     nil
   end
 end
