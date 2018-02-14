@@ -387,13 +387,26 @@ end
 
 # Stored with Mon node always
 def ceph_chef_mgr_secret
-  if !ceph_chef_mon_nodes.empty?
-    ceph_chef_save_mgr_secret(ceph_chef_mon_nodes[0]['ceph']['mgr-secret'])
-    ceph_chef_mon_nodes[0]['ceph']['mgr-secret']
-  elsif node['ceph']['mgr-secret']
-    node['ceph']['mgr-secret']
+  case node['ceph']['databag_type']
+  when 'encrypted'
+    secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['mon']['secret_file'])
+    Chef::EncryptedDataBagItem.load('ceph', 'mgr', secret)['secret']
+  when 'vault'
+    id = node['ceph']['vault']['ceph-mgr-secret']
+    secret = ChefVault::Item.load(id['data_bag'], id['item'])
+    secret[id['secret']].delete!("\n")
+  when 'none'
+    if !ceph_chef_mon_nodes.empty?
+      ceph_chef_save_mgr_secret(ceph_chef_mon_nodes[0]['ceph']['mgr-secret'])
+      ceph_chef_mon_nodes[0]['ceph']['mgr-secret']
+    elsif node['ceph']['mgr-secret']
+      node['ceph']['mgr-secret']
+    else
+      Chef::Log.info('No mgr secret found')
+      nil
+    end
   else
-    Chef::Log.info('No mgr secret found')
+    Chef::Log.info("Data Bag Type #{node['ceph']['databag_type']} not supported.")
     nil
   end
 end
