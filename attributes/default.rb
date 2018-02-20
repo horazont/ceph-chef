@@ -134,6 +134,11 @@ default['ceph']['vault']['ceph-mon-secret'] = {
   'item' => 'ceph-mon-secret',
   'secret' => 'ceph-mon-secret'
 }
+default['ceph']['vault']['ceph-mgr-secret'] = {
+  'data_bag' => node['ceph']['vault']['default_data_bag'],
+  'item' => 'ceph-mgr-secret',
+  'secret' => 'ceph-mgr-secret'
+}
 default['ceph']['vault']['ceph-osd-bootstrap-secret'] = {
   'data_bag' => node['ceph']['vault']['default_data_bag'],
   'item' => 'ceph-osd-bootstrap-secret',
