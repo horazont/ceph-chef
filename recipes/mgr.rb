@@ -54,8 +54,7 @@ if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
   # This will execute on other nodes besides the first mgr node.
   execute 'format ceph-mgr-secret as keyring' do
     command lazy {
-      "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --add-key=#{node['ceph']['manager-secret']}
-      --cap mon 'allow *'"
+      "ceph-authtool --create-keyring #{keyring} --name=mgr.#{node['hostname']} --add-key=#{node['ceph']['manager-secret']} --cap mon 'allow *'"
     }
     creates keyring
     user node['ceph']['owner']
