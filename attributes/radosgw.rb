@@ -74,6 +74,9 @@ default['ceph']['radosgw']['rgw_num_rados_handles'] = 5
 # The default is everything on the same OS
 default['ceph']['radosgw']['init_style'] = node['ceph']['init_style']
 
+# Set if radosgw ceph user should be created
+# Set to false if you want to create the user by yourselfe eg. to define special rights and have rgw nodes without admin key
+default['ceph']['radosgw']['create_ceph_user'] = true
 # An admin user needs to be added to RGW. Feel free to change as you see fit or leave it.
 # Important: These values must be present or the creation of the admin user will fail!
 # NB: IMPORTANT - 'buckets' below is an array of json data and not just the name of a bucket!
