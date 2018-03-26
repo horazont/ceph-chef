@@ -54,19 +54,21 @@ end
 # IF you want specific recipes for civetweb then put them in the recipe referenced here.
 include_recipe 'ceph-chef::radosgw_civetweb'
 
-execute 'osd-create-key-mon-client-in-directory' do
-  command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.mon.keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
-  not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
-end
+if node['ceph']['radosgw']['create_ceph_user']
+  execute 'osd-create-key-mon-client-in-directory' do
+    command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.mon.keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
+    not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
+  end
 
-execute 'osd-create-key-admin-client-in-directory' do
-  command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring --create-keyring --name=client.admin --add-key=#{ceph_chef_admin_secret} --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
-  not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
-end
+  execute 'osd-create-key-admin-client-in-directory' do
+    command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring --create-keyring --name=client.admin --add-key=#{ceph_chef_admin_secret} --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
+    not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
+  end
 
-# Verifies or sets the correct mode only
-file "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring" do
-  mode '0640'
+  # Verifies or sets the correct mode only
+  file "/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring" do
+    mode '0640'
+  end
 end
 
 # Portion above is the same for Federated and Non-Federated versions.
