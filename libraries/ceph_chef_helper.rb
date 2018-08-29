@@ -363,7 +363,7 @@ def ceph_chef_mon_secret
   when 'vault'
     id = node['ceph']['vault']['ceph-mon-secret']
     secret = chef_vault_item(id['data_bag'], id['item'])
-    secret[id['secret']].delete!("\n")
+    secret[id['secret']].delete("\n")
   when 'none'
     if !ceph_chef_mon_nodes.empty?
       ceph_chef_save_mon_secret(ceph_chef_mon_nodes[0]['ceph']['monitor-secret'])
@@ -394,7 +394,7 @@ def ceph_chef_mgr_secret
   when 'vault'
     id = node['ceph']['vault']['ceph-mgr-secret']
     secret = chef_vault_item(id['data_bag'], id['item'])
-    secret[id['secret']].delete!("\n")
+    secret[id['secret']].delete("\n")
   when 'none'
     if !ceph_chef_mon_nodes.empty?
       ceph_chef_save_mgr_secret(ceph_chef_mon_nodes[0]['ceph']['mgr-secret'])
@@ -429,7 +429,7 @@ def ceph_chef_bootstrap_osd_secret
   when 'vault'
     id = node['ceph']['vault']['ceph-osd-bootstrap-secret']
     secret = chef_vault_item(id['data_bag'], id['item'])
-    secret[id['secret']].delete!("\n")
+    secret[id['secret']].delete("\n")
   when 'none'
     if !ceph_chef_mon_nodes.empty?
       ceph_chef_save_bootstrap_osd_secret(ceph_chef_mon_nodes[0]['ceph']['bootstrap-osd'])
@@ -507,7 +507,7 @@ def ceph_chef_admin_secret
   when 'vault'
     id = node['ceph']['vault']['ceph-admin-secret']
     secret = chef_vault_item(id['data_bag'], id['item'])
-    secret[id['secret']].delete!("\n")
+    secret[id['secret']].delete("\n")
   when 'none'
     if !ceph_chef_admin_nodes.empty?
       ceph_chef_save_admin_secret(ceph_chef_admin_nodes[0]['ceph']['admin-secret'])
@@ -539,7 +539,7 @@ def ceph_chef_radosgw_secret
   when 'vault'
     id = node['ceph']['vault']['ceph-radosgw-secret']
     secret = chef_vault_item(id['data_bag'], id['item'])
-    secret[id['secret']].delete!("\n")
+    secret[id['secret']].delete("\n")
   when 'none'
     if !ceph_chef_radosgw_nodes.empty?
       rgw_inst = ceph_chef_radosgw_nodes[0]
